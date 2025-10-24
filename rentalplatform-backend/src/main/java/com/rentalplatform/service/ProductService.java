@@ -23,6 +23,8 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final FileStorageService fileStorageService;
+
 
     // Get all products for a specific owner
     public List<ProductDTO> getOwnerProducts(String ownerEmail) {
@@ -127,9 +129,19 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
 
-        // Vérifier que l'utilisateur est bien le propriétaire
         if (!product.getOwner().getEmail().equals(ownerEmail)) {
             throw new RuntimeException("Vous n'êtes pas autorisé à supprimer ce produit");
+        }
+
+        // Delete product image if exists
+        if (product.getImageUrl() != null && product.getImageUrl().contains("/uploads/")) {
+            String filename = product.getImageUrl().substring(product.getImageUrl().lastIndexOf("/") + 1);
+            try {
+                fileStorageService.deleteFile(filename);
+            } catch (Exception e) {
+                // Log error but don't fail the deletion
+                System.err.println("Error deleting file: " + e.getMessage());
+            }
         }
 
         product.setIsActive(false);

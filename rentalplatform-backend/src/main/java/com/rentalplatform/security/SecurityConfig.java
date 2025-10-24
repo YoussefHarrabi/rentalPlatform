@@ -43,11 +43,17 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints - no authentication required
-                        .requestMatchers("/api/auth/**", "/api/test/public", "/api/categories/**", "/api/products/**").permitAll()
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/api/test/public",
+                                "/api/categories/**",
+                                "/api/products/**",
+                                "/uploads/**"
+                        ).permitAll()
                         // Admin only endpoints
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        // Owner and Admin endpoints
-                        .requestMatchers("/api/owner/**").hasAnyRole("OWNER", "ADMIN")
+                        // Owner and Admin endpoints (includes file upload)
+                        .requestMatchers("/api/owner/**", "/api/files/**").hasAnyRole("OWNER", "ADMIN")
                         // Client, Owner and Admin endpoints
                         .requestMatchers("/api/client/**").hasAnyRole("CLIENT", "OWNER", "ADMIN")
                         // All other requests require authentication
